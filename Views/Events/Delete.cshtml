@@ -1,45 +1,21 @@
 ﻿@model ST10398576_EventEase.Models.Event
-
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Event";
 }
 
-<h1>Delete</h1>
+<h2>Delete Event</h2>
 
-<h3>Are you sure you want to delete this?</h3>
+<p>Are you sure you want to delete this?</p>
+
 <div>
-    <h4>Event</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EventName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EventName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EventDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EventDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Venue)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Venue.VenueId)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="EventId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+    <p><strong>@Model.EventName</strong></p>
+    <p>@Model.EventDate.ToString("dd MMM yyyy")</p>
+    <p>@Model.Venue?.VenueName</p>
 </div>
+
+<form asp-action="Delete" method="post" asp-route-id="@Model.EventId">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="EventId" />
+    <button type="submit">Delete</button>
+    <a asp-action="Index">Cancel</a>
+</form>

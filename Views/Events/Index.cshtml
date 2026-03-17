@@ -3,32 +3,37 @@
     ViewData["Title"] = "Events";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Events</h2>
-        <a asp-action="Create" class="btn btn-success">+ Create New Event</a>
-    </div>
+<h2>Events</h2>
+<p>
+    <a asp-action="Create" class="btn btn-primary mb-3">Create New Event</a>
+</p>
 
-    <div class="row">
-        @foreach (var ev in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@ev.EventName</h5>
-                        <p class="card-text">
-                            <strong>Date:</strong> @ev.EventDate.ToString("dd MMM yyyy") <br />
-                            <strong>Venue:</strong> @ev.Venue?.VenueName <br />
-                            <strong>Description:</strong> @ev.Description
-                        </p>
-                        <div class="btn-group" role="group">
-                            <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-primary btn-sm">Details</a>
-                            <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-warning btn-sm">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-danger btn-sm">Delete</a>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in Model)
+            {
+                <tr>
+                    <td>@ev.EventName</td>
+                    <td>@ev.EventDate.ToString("dd MMM yyyy")</td>
+                    <td>@ev.Venue?.VenueName</td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group" aria-label="Actions">
+                            <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-primary">Details</a>
+                            <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
                         </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -35,12 +35,14 @@
     </nav>
 
     <!-- Main content -->
-    <div class="container mt-4">
-        @RenderBody()
-    </div>
+    <main class="flex-fill container mt-4">
+        <div class="border rounded p-4 bg-white shadow-sm">
+            @RenderBody()
+        </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="border-top footer text-muted bg-dark text-white text-center py-3 mt-5">
+    <footer class="border-top footer text-muted bg-dark text-white text-center py-3 mt-auto">
         <div class="container">
             <p class="mb-0">&copy; @DateTime.Now.Year - EventEase | Manage Venues, Events & Bookings</p>
         </div>
