@@ -1,31 +1,99 @@
 ﻿@model ST10398576_EventEase.Models.Booking
 @{
     ViewData["Title"] = "Edit Booking";
+    var events = ViewBag.Events as List<ST10398576_EventEase.Models.Event> ?? new List<ST10398576_EventEase.Models.Event>();
 }
 
 <div class="container mt-4">
     <h2 class="mb-4">Edit Booking</h2>
 
-    <form asp-action="Edit" class="needs-validation" novalidate>
-        <div class="mb-3">
-            <label asp-for="BookingDate" class="form-label"></label>
-            <input asp-for="BookingDate" type="date" class="form-control" />
-            <span asp-validation-for="BookingDate" class="text-danger"></span>
-        </div>
+    <form asp-action="Edit" asp-route-id="@Model.BookingId" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="BookingId" />
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
         <div class="mb-3">
             <label asp-for="EventId" class="form-label">Event</label>
-            <select asp-for="EventId" asp-items="ViewBag.EventId" class="form-select"></select>
+            <select asp-for="EventId" id="EventId" class="form-select">
+                <option value="">-- Select event --</option>
+                @foreach (var ev in events)
+                {
+                    var isSelected = ev.EventId == Model.EventId;
+                    if (ev.Venue != null)
+                    {
+                        if (isSelected)
+                        {
+                            <option value="@ev.EventId" data-venue-name="@ev.Venue.VenueName" data-event-date="@ev.EventDate.ToString("yyyy-MM-dd")" selected>
+                                @ev.EventName
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@ev.EventId" data-venue-name="@ev.Venue.VenueName" data-event-date="@ev.EventDate.ToString("yyyy-MM-dd")">
+                                @ev.EventName
+                            </option>
+                        }
+                    }
+                    else
+                    {
+                        if (isSelected)
+                        {
+                            <option value="@ev.EventId" data-event-date="@ev.EventDate.ToString("yyyy-MM-dd")" selected>
+                                @ev.EventName
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@ev.EventId" data-event-date="@ev.EventDate.ToString("yyyy-MM-dd")">
+                                @ev.EventName
+                            </option>
+                        }
+                    }
+                }
+            </select>
             <span asp-validation-for="EventId" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="VenueId" class="form-label">Venue</label>
-            <select asp-for="VenueId" asp-items="ViewBag.VenueId" class="form-select"></select>
-            <span asp-validation-for="VenueId" class="text-danger"></span>
+            <label asp-for="BookingDate" class="form-label">Event Date</label>
+            <input asp-for="BookingDate" id="EventDateDisplay" class="form-control" readonly />
+            <span asp-validation-for="BookingDate" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Venue</label>
+            <input id="VenueNameDisplay" class="form-control" readonly />
         </div>
 
         <button type="submit" class="btn btn-primary">Save Changes</button>
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var eventSelect = document.getElementById('EventId');
+            var venueDisplay = document.getElementById('VenueNameDisplay');
+            var dateDisplay = document.getElementById('EventDateDisplay');
+
+            function updateDisplays() {
+                var opt = eventSelect.options[eventSelect.selectedIndex];
+                if (!opt || !opt.value) {
+                    venueDisplay.value = '';
+                    dateDisplay.value = '';
+                    return;
+                }
+                var vName = opt.getAttribute('data-venue-name') || '';
+                var eDate = opt.getAttribute('data-event-date') || '';
+                venueDisplay.value = vName;
+                dateDisplay.value = eDate;
+            }
+
+            eventSelect.addEventListener('change', updateDisplays);
+            // initialize on load
+            updateDisplays();
+        })();
+    </script>
+}

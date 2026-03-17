@@ -49,26 +49,51 @@ namespace ST10398576_EventEase.Controllers
         // GET: Bookings/Create
         public IActionResult Create()
         {
-            ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventId");
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueId");
+            // load events including their venue so the view can show venue name and event date
+            var events = _context.Events.Include(e => e.Venue).ToList();
+            ViewBag.Events = events;
+            ViewData["EventId"] = new SelectList(events, "EventId", "EventName");
             return View();
         }
 
         // POST: Bookings/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // Only bind BookingId and EventId; BookingDate and VenueId are derived from the selected Event.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BookingId,BookingDate,EventId,VenueId")] Booking booking)
+        public async Task<IActionResult> Create([Bind("BookingId,EventId")] Booking booking)
         {
+            // Find the selected event (includes EventDate and Venue)
+            var ev = await _context.Events.AsNoTracking().Include(e => e.Venue).FirstOrDefaultAsync(e => e.EventId == booking.EventId);
+
+            if (ev == null)
+            {
+                ModelState.AddModelError("EventId", "Selected event was not found. Please choose an event.");
+            }
+            else
+            {
+                // set booking properties based on the event (server-side authoritative)
+                booking.BookingDate = ev.EventDate;
+                booking.VenueId = ev.VenueId;
+
+                // remove validation entries that complain about Event/Venue being required
+                ModelState.Remove(nameof(booking.EventId));
+                ModelState.Remove(nameof(booking.VenueId));
+                ModelState.Remove("Event");
+                ModelState.Remove("Venue");
+            }
+
+            // Now validate remaining properties (e.g. BookingDate)
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventId", booking.EventId);
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueId", booking.VenueId);
+
+            // repopulate events for redisplay
+            var events = _context.Events.Include(e => e.Venue).ToList();
+            ViewBag.Events = events;
+            ViewData["EventId"] = new SelectList(events, "EventId", "EventName", booking.EventId);
             return View(booking);
         }
 
@@ -85,14 +110,16 @@ namespace ST10398576_EventEase.Controllers
             {
                 return NotFound();
             }
-            ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventId", booking.EventId);
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueId", booking.VenueId);
+
+            // provide events with venue info for the edit view (for readonly displays)
+            var events = _context.Events.Include(e => e.Venue).ToList();
+            ViewBag.Events = events;
+            ViewData["EventId"] = new SelectList(events, "EventId", "EventName", booking.EventId);
+            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", booking.VenueId);
             return View(booking);
         }
 
         // POST: Bookings/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BookingId,BookingDate,EventId,VenueId")] Booking booking)
@@ -100,6 +127,13 @@ namespace ST10398576_EventEase.Controllers
             if (id != booking.BookingId)
             {
                 return NotFound();
+            }
+
+            // ensure VenueId matches selected Event (defense in depth)
+            var ev = await _context.Events.AsNoTracking().FirstOrDefaultAsync(e => e.EventId == booking.EventId);
+            if (ev != null)
+            {
+                booking.VenueId = ev.VenueId;
             }
 
             if (ModelState.IsValid)
@@ -122,8 +156,12 @@ namespace ST10398576_EventEase.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventId", booking.EventId);
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueId", booking.VenueId);
+
+            // repopulate events and venues for redisplay
+            var events = _context.Events.Include(e => e.Venue).ToList();
+            ViewBag.Events = events;
+            ViewData["EventId"] = new SelectList(events, "EventId", "EventName", booking.EventId);
+            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", booking.VenueId);
             return View(booking);
         }
 
