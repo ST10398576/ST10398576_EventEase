@@ -3,18 +3,22 @@
     ViewData["Title"] = "Delete Booking";
 }
 
-<h2>Delete Booking</h2>
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="card-title">Delete Booking</h2>
 
-<p>Are you sure?</p>
+        <p>Are you sure?</p>
 
-<div>
-    <p><strong>Event:</strong> @Model.Event?.EventName</p>
-    <p><strong>Date:</strong> @Model.BookingDate.ToString("dd MMM yyyy")</p>
+        <div>
+            <p><strong>Event:</strong> @Model.Event?.EventName</p>
+            <p><strong>Date:</strong> @Model.BookingDate.ToString("dd MMM yyyy")</p>
+        </div>
+
+        <form asp-action="Delete" method="post" asp-route-id="@Model.BookingId">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="BookingId" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
 </div>
-
-<form asp-action="Delete" method="post" asp-route-id="@Model.BookingId">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="BookingId" />
-    <button type="submit" class="btn btn-primary">Delete</button>
-    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
-</form>

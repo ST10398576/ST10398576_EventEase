@@ -3,15 +3,15 @@
     ViewData["Title"] = "Booking Details";
 }
 
-<h2>Booking</h2>
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="card-title">Booking</h2>
 
-<div>
-    <p><strong>Event:</strong> @Model.Event?.EventName</p>
-    <p><strong>Date:</strong> @Model.BookingDate.ToString("dd MMM yyyy")</p>
-    <p><strong>Venue:</strong> @Model.Venue?.VenueName</p>
-</div>
+        <p><strong>Event:</strong> @Model.Event?.EventName</p>
+        <p><strong>Date:</strong> @Model.BookingDate.ToString("dd MMM yyyy")</p>
+        <p><strong>Venue:</strong> @Model.Venue?.VenueName</p>
 
-<p>
-    <a asp-action="Edit" asp-route-id="@Model.BookingId" class="btn btn-primary">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+        <div class="mt-3">
+            <a asp-action="Edit" asp-route-id="@Model.BookingId" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
 </p>

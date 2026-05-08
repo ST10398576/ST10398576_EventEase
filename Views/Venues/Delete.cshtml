@@ -15,6 +15,6 @@
 <form asp-action="Delete" method="post" asp-route-id="@Model.VenueId">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="VenueId" />
-    <button type="submit" class="btn btn-primary">Delete</button>
+    <button type="submit" class="btn btn-danger">Delete</button>
     <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
 </form>
