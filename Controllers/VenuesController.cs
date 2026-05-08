@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ST10398576_EventEase.Data;
 using ST10398576_EventEase.Models;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ST10398576_EventEase.Controllers
 {
     public class VenuesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public VenuesController(ApplicationDbContext context)
+        public VenuesController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Venues
@@ -54,8 +58,36 @@ namespace ST10398576_EventEase.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
+        public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity")] Venue venue, IFormFile imageFile)
         {
+            // 🔹 Enforce uploads check
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                ModelState.AddModelError("imageFile", "Please upload an image.");
+            }
+            else
+            {
+                // Connect to Blob Storage
+                var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureStorage"));
+                var containerClient = blobServiceClient.GetBlobContainerClient("eventeaseimages");
+                await containerClient.CreateIfNotExistsAsync();
+
+                // Upload file
+                var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName));
+                using (var stream = imageFile.OpenReadStream())
+                {
+                    await blobClient.UploadAsync(stream, true);
+                }
+
+                // Save Blob URL to DB
+                venue.ImageUrl = blobClient.Uri.ToString();
+            }
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                ModelState.AddModelError("imageFile", "Please upload an image.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(venue);
@@ -64,6 +96,7 @@ namespace ST10398576_EventEase.Controllers
             }
             return View(venue);
         }
+
 
         // GET: Venues/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -86,11 +119,27 @@ namespace ST10398576_EventEase.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
+        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity")] Venue venue, IFormFile imageFile)
         {
             if (id != venue.VenueId)
             {
                 return NotFound();
+            }
+
+            if(imageFile != null && imageFile.Length > 0)
+            {
+                // Connect to Blob Storage
+                var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureStorage"));
+                var containerClient = blobServiceClient.GetBlobContainerClient("eventeaseimages");
+                await containerClient.CreateIfNotExistsAsync();
+                // Upload file
+                var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName));
+                using (var stream = imageFile.OpenReadStream())
+                {
+                    await blobClient.UploadAsync(stream, true);
+                }
+                // Save Blob URL to DB
+                venue.ImageUrl = blobClient.Uri.ToString();
             }
 
             if (ModelState.IsValid)

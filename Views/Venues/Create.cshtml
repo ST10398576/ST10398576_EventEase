@@ -5,35 +5,35 @@
 
 <h2>Create Venue</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
 
     <div>
         <label asp-for="VenueName"></label>
-        <input asp-for="VenueName" />
+        <input asp-for="VenueName" class="form-control" />
         <span asp-validation-for="VenueName" class="text-danger"></span>
     </div>
 
     <div>
         <label asp-for="Location"></label>
-        <input asp-for="Location" />
+        <input asp-for="Location" class="form-control" />
         <span asp-validation-for="Location" class="text-danger"></span>
     </div>
 
     <div>
         <label asp-for="Capacity"></label>
-        <input asp-for="Capacity" type="number" />
+        <input asp-for="Capacity" type="number" class="form-control" />
         <span asp-validation-for="Capacity" class="text-danger"></span>
     </div>
 
-    <div>
-        <label asp-for="ImageUrl"></label>
-        <input asp-for="ImageUrl" />
+    <div class="form-group">
+        <label>Upload Image</label>
+        <input type="file" name="imageFile" class="form-control" />
         <span asp-validation-for="ImageUrl" class="text-danger"></span>
     </div>
 
     <div>
-        <button type="submit">Create</button>
-        <a asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </div>
 </form>

@@ -8,7 +8,10 @@
 <div>
     <p><strong>Location:</strong> @Model.Location</p>
     <p><strong>Capacity:</strong> @Model.Capacity</p>
-    <p><strong>Image URL:</strong> @Model.ImageUrl</p>
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="@Model.VenueName" style="max-width:400px; height:auto;" />
+    }
 </div>
 
 <p>

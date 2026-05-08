@@ -28,14 +28,10 @@
             @foreach (var venue in Model)
             {
                 <tr>
-                    <td style="width:140px;">
+                    <td><!-- style="width:140px;" --> 
                         @if (!string.IsNullOrEmpty(venue.ImageUrl))
                         {
-                            <img src="@venue.ImageUrl" alt="@venue.VenueName" class="img-thumbnail" style="max-width:120px; max-height:80px;" />
-                        }
-                        else
-                        {
-                            <span class="text-muted">No image</span>
+                            <img src="@venue.ImageUrl" alt="@venue.VenueName" style="max-width:150px; height:auto;" />
                         }
                     </td>
                     <td>@venue.VenueName</td>
