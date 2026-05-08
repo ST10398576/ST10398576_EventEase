@@ -1,32 +1,44 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ST10398576_EventEase.Data;
 using ST10398576_EventEase.Models;
+using ST10398576_EventEase.Models.ViewModels; 
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ST10398576_EventEase.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View();
-        }
+            var query = from b in _context.Bookings
+                        join v in _context.Venues on b.VenueId equals v.VenueId
+                        join e in _context.Events on b.EventId equals e.EventId
+                        select new BookingDisplayViewModel
+                        {
+                            BookingId = b.BookingId,
+                            VenueName = v.VenueName,
+                            EventName = e.EventName,
+                            BookingDate = b.BookingDate,
+                            Capacity = v.Capacity
+                        };
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(q => q.EventName.Contains(searchString)
+                                      || q.VenueName.Contains(searchString)
+                                      || q.BookingId.ToString().Contains(searchString));
+            }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(await query.ToListAsync());
         }
     }
 }

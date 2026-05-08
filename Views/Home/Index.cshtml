@@ -28,5 +28,39 @@
                 </div>
             </div>
         </div>
+
+        <h3 class="mt-4">Bookings Overview</h3>
+
+        <form asp-action="Index" method="get" class="mb-3">
+            <input type="text" name="searchString" placeholder="Search by Event, Venue, or Booking ID"
+                   class="form-control d-inline-block w-50" />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Venue</th>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Capacity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.BookingId</td>
+                        <td>@item.VenueName</td>
+                        <td>@item.EventName</td>
+                        <td>@item.BookingDate.ToShortDateString()</td>
+                        <td>@item.Capacity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
     </div>
 </div>
