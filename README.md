@@ -1,4 +1,8 @@
 # ST10398576_EventEase
+## Website is now deployed and a blob storage container is tied to it.
+<img width="940" height="431" alt="image" src="https://github.com/user-attachments/assets/597d425e-a91f-4afd-95af-4626b4d5ab08" />
+
+
 
 ## Home Page
 ### Home Page Dashboard
