@@ -7,7 +7,6 @@
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
-
     <div>
         <label asp-for="VenueName"></label>
         <input asp-for="VenueName" class="form-control" />
@@ -26,10 +25,12 @@
         <span asp-validation-for="Capacity" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label>Upload Image</label>
-        <input type="file" name="imageFile" class="form-control" />
+    <div class="form-group mb-3">
+        <label for="imageFile" class="form-label">Upload Image</label>
+        <input type="file" name="imageFile" id="imageFile" accept="image/*" class="form-control" />
         <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        <!-- Display validation messages added to ModelState for the file input name ('imageFile') -->
+        <span class="text-danger" data-valmsg-for="imageFile" data-valmsg-replace="true"></span>
     </div>
 
     <div class="form-group">

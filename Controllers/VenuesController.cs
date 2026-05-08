@@ -63,7 +63,9 @@ namespace ST10398576_EventEase.Controllers
             // 🔹 Enforce uploads check
             if (imageFile == null || imageFile.Length == 0)
             {
-                ModelState.AddModelError("imageFile", "Please upload an image.");
+                // Associate validation error with the model property so the view's
+                // asp-validation-for="ImageUrl" element displays the message like other fields.
+                ModelState.AddModelError("ImageUrl", "Please upload an image.");
             }
             else
             {
@@ -83,10 +85,7 @@ namespace ST10398576_EventEase.Controllers
                 venue.ImageUrl = blobClient.Uri.ToString();
             }
 
-            if (imageFile == null || imageFile.Length == 0)
-            {
-                ModelState.AddModelError("imageFile", "Please upload an image.");
-            }
+            // Note: validation for missing image is already added above (ImageUrl key)
 
             if (ModelState.IsValid)
             {

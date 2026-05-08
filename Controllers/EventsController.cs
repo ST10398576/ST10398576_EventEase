@@ -60,6 +60,25 @@ namespace ST10398576_EventEase.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EventId,EventName,EventDate,Description,VenueId")] Event @event)
         {
+            // Prevents double-booking: no two events at the same venue on the same date
+            if (@event != null)
+            {
+                bool conflict = await _context.Events
+                    .AnyAsync(e => e.VenueId == @event.VenueId
+                                   && e.EventDate.Year == @event.EventDate.Year
+                                   && e.EventDate.Month == @event.EventDate.Month
+                                   && e.EventDate.Day == @event.EventDate.Day);
+
+                if (conflict)
+                {
+                    var msg = "An event already exists at the selected venue on that date. Please choose a different date or venue.";
+                    // Adds errors to both fields and the summary so it's visible in the UI
+                    ModelState.AddModelError("VenueId", msg);
+                    ModelState.AddModelError("EventDate", msg);
+                    ModelState.AddModelError(string.Empty, msg);
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(@event);

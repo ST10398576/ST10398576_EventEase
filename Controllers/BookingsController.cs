@@ -80,14 +80,6 @@ namespace ST10398576_EventEase.Controllers
                 ModelState.Remove(nameof(booking.VenueId));
                 ModelState.Remove("Event");
                 ModelState.Remove("Venue");
-
-                bool exists = await _context.Bookings
-                    .AnyAsync(b => b.VenueId == booking.VenueId && b.BookingDate == booking.BookingDate);
-
-                if(exists)
-                {
-                    ModelState.AddModelError(string.Empty, "The selected event's venue is already booked for that date. Please choose a different venue.");
-                }
             }
 
             // Now validate remaining properties
