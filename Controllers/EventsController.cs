@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Humanizer.Localisation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ST10398576_EventEase.Data;
 using ST10398576_EventEase.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ST10398576_EventEase.Controllers
 {
@@ -147,6 +148,15 @@ namespace ST10398576_EventEase.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var @event = await _context.Events.FindAsync(id);
+
+            //Restrict deletion if bookings exist
+            bool hasBookings = await _context.Bookings.AnyAsync(b => b.EventId == id);
+            if (hasBookings)
+            {
+                ModelState.AddModelError("", "Cannot delete an event with existing bookings.");
+                return View(@event);
+            }
+
             if (@event != null)
             {
                 _context.Events.Remove(@event);

@@ -140,9 +140,19 @@ namespace ST10398576_EventEase.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var venue = await _context.Venues.FindAsync(id);
+
+            //Restrict deletion if bookings exist
+            bool hasBookings = await _context.Bookings.AnyAsync(b => b.VenueId == id);
+            if(hasBookings)
+            {
+                ModelState.AddModelError("", "Cannot delete venue with existing bookings.");
+                return View(venue);
+            }
+
             if (venue != null)
             {
                 _context.Venues.Remove(venue);
+                
             }
 
             await _context.SaveChangesAsync();
