@@ -145,8 +145,8 @@ namespace ST10398576_EventEase.Controllers
             bool hasBookings = await _context.Bookings.AnyAsync(b => b.VenueId == id);
             if(hasBookings)
             {
-                ModelState.AddModelError("", "Cannot delete venue with existing bookings.");
-                return View(venue);
+                TempData["ErrorMessage"] = "Cannot delete a venue with existing bookings.";
+                return RedirectToAction(nameof(Index));
             }
 
             if (venue != null)
