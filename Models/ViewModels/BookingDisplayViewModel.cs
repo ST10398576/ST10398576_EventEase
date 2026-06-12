@@ -7,5 +7,8 @@
         public string EventName { get; set; }
         public DateTime BookingDate { get; set; }
         public int Capacity { get; set; }
+        public int EventTypeId { get; set; }
+        public string EventType { get; set; }
+        public bool IsAvailable { get; set; } 
     }
 }

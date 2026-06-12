@@ -124,33 +124,44 @@ namespace ST10398576_EventEase.Controllers
             {
                 return NotFound();
             }
-
-            if(imageFile != null && imageFile.Length > 0)
+            // Load existing entity so we only change the fields the user updated.
+            var existing = await _context.Venues.FindAsync(id);
+            if (existing == null)
             {
-                // Connect to Blob Storage
+                return NotFound();
+            }
+
+            // Update scalar properties from the incoming model
+            existing.VenueName = venue.VenueName;
+            existing.Location = venue.Location;
+            existing.Capacity = venue.Capacity;
+
+            // If a new image was uploaded, upload and replace the ImageUrl; otherwise keep existing.ImageUrl
+            if (imageFile != null && imageFile.Length > 0)
+            {
                 var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureStorage"));
                 var containerClient = blobServiceClient.GetBlobContainerClient("eventeaseimages");
                 await containerClient.CreateIfNotExistsAsync();
-                // Upload file
+
                 var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName));
                 using (var stream = imageFile.OpenReadStream())
                 {
                     await blobClient.UploadAsync(stream, true);
                 }
-                // Save Blob URL to DB
-                venue.ImageUrl = blobClient.Uri.ToString();
+                existing.ImageUrl = blobClient.Uri.ToString();
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(venue);
+                    _context.Update(existing);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VenueExists(venue.VenueId))
+                    if (!VenueExists(existing.VenueId))
                     {
                         return NotFound();
                     }
@@ -159,9 +170,10 @@ namespace ST10398576_EventEase.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(venue);
+
+            // If we got this far, something failed; return the view with the original existing entity so the image is displayed
+            return View(existing);
         }
 
         // GET: Venues/Delete/5

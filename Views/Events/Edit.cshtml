@@ -35,6 +35,12 @@
                 <span asp-validation-for="VenueId" class="text-danger"></span>
             </div>
 
+            <div class="mb-3">
+                <label asp-for="EventTypeId" class="form-label">Event Type</label>
+                <select asp-for="EventTypeId" asp-items="ViewBag.EventTypeId" class="form-select"></select>
+                <span asp-validation-for="EventTypeId" class="text-danger"></span>
+            </div>
+
             <div>
                 <button type="submit" class="btn btn-primary">Edit</button>
                 <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>

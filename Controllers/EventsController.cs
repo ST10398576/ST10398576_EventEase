@@ -23,7 +23,9 @@ namespace ST10398576_EventEase.Controllers
         // GET: Events
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Events.Include(e => e.Venue);
+            var applicationDbContext = _context.Events
+                .Include(e => e.Venue)
+                .Include(e => e.EventType); // NEW
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -37,7 +39,9 @@ namespace ST10398576_EventEase.Controllers
 
             var @event = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType) // NEW
                 .FirstOrDefaultAsync(m => m.EventId == id);
+
             if (@event == null)
             {
                 return NotFound();
@@ -47,22 +51,29 @@ namespace ST10398576_EventEase.Controllers
         }
 
         // GET: Events/Create
+        // GET: Events/Create
         public IActionResult Create()
         {
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName");
+            ViewBag.VenueId = new SelectList(_context.Venues.Where(v => v.IsAvailable), "VenueId", "VenueName");
+            ViewBag.EventTypeId = new SelectList(_context.EventTypes, "EventTypeId", "EventTypeName");
             return View();
         }
 
-        // POST: Events/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Events/Create/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventId,EventName,EventDate,Description,VenueId")] Event @event)
+        public async Task<IActionResult> Create([Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
         {
-            // Prevents double-booking: no two events at the same venue on the same date
             if (@event != null)
             {
+                // Ensure the chosen EventType exists
+                bool eventTypeExists = await _context.EventTypes.AnyAsync(t => t.EventTypeId == @event.EventTypeId);
+                if (!eventTypeExists)
+                {
+                    ModelState.AddModelError("EventTypeId", "Please select a valid Event Type.");
+                }
+
+                // Prevent double-booking: check for same venue + same calendar date
                 bool conflict = await _context.Events
                     .AnyAsync(e => e.VenueId == @event.VenueId
                                    && e.EventDate.Year == @event.EventDate.Year
@@ -72,11 +83,16 @@ namespace ST10398576_EventEase.Controllers
                 if (conflict)
                 {
                     var msg = "An event already exists at the selected venue on that date. Please choose a different date or venue.";
-                    // Adds errors to both fields and the summary so it's visible in the UI
                     ModelState.AddModelError("VenueId", msg);
                     ModelState.AddModelError("EventDate", msg);
                     ModelState.AddModelError(string.Empty, msg);
                 }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                Console.WriteLine(string.Join(", ", errors));
             }
 
             if (ModelState.IsValid)
@@ -85,37 +101,36 @@ namespace ST10398576_EventEase.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+
+            ViewBag.VenueId = new SelectList(_context.Venues.Where(v => v.IsAvailable), "VenueId", "VenueName");
+            ViewBag.EventTypeId = new SelectList(_context.EventTypes, "EventTypeId", "EventTypeName", @event.EventTypeId);
             return View(@event);
         }
 
-        // GET: Events/Edit/5
+        // GET: Events/Edit
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var @event = await _context.Events.FindAsync(id);
-            if (@event == null)
-            {
-                return NotFound();
-            }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+            if (@event == null) return NotFound();
+
+            ViewBag.VenueId = new SelectList(_context.Venues.Where(v => v.IsAvailable), "VenueId", "VenueName");
+            ViewBag.EventTypeId = new SelectList(_context.EventTypes, "EventTypeId", "EventTypeName", @event.EventTypeId);
             return View(@event);
         }
 
         // POST: Events/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,EventDate,Description,VenueId")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
         {
-            if (id != @event.EventId)
+            if (id != @event.EventId) return NotFound();
+            
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                Console.WriteLine(string.Join(", ", errors)); // or log it
             }
 
             if (ModelState.IsValid)
@@ -124,21 +139,17 @@ namespace ST10398576_EventEase.Controllers
                 {
                     _context.Update(@event);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EventExists(@event.EventId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!EventExists(@event.EventId)) return NotFound();
+                    else throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+
+            ViewBag.VenueId = new SelectList(_context.Venues.Where(v => v.IsAvailable), "VenueId", "VenueName");
+            ViewBag.EventTypeId = new SelectList(_context.EventTypes, "EventTypeId", "EventTypeName", @event.EventTypeId);
             return View(@event);
         }
 

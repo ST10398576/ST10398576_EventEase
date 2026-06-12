@@ -3,42 +3,55 @@
     ViewData["Title"] = "Events";
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
+<div class="container">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
 
-<h2>Events</h2>
-<p>
-    <a asp-action="Create" class="btn btn-primary mb-3">Create New Event</a>
-</p>
+    <header class="d-flex align-items-center justify-content-between py-4">
+        <div>
+            <h1 class="h3 mb-0">Events</h1>
+            <p class="text-muted small mb-0">Create and manage events.</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">Create New Event</a>
+        </div>
+    </header>
 
-<div class="table-responsive">
-    <table class="table table-striped table-bordered table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Venue</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ev in Model)
-            {
-                <tr>
-                    <td>@ev.EventName</td>
-                    <td>@ev.EventDate.ToString("dd MMM yyyy")</td>
-                    <td>@ev.Venue?.VenueName</td>
-                    <td class="text-center">
-                        <div class="btn-group" role="group" aria-label="Actions">
-                            <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-primary">Details</a>
-                            <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Event Type</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ev in Model)
+                        {
+                            <tr>
+                                <td>@ev.EventName</td>
+                                <td>@ev.EventDate.ToString("dd MMM yyyy")</td>
+                                <td>@ev.Venue?.VenueName</td>
+                                <td>@ev.EventType?.EventTypeName</td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group" aria-label="Actions">
+                                        <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-primary">Details</a>
+                                        <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

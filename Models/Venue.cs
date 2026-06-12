@@ -19,6 +19,8 @@ namespace ST10398576_EventEase.Models
         //Controller sets this after upload
         public string? ImageUrl { get; set; }
 
+        public bool IsAvailable { get; set; }
+
         public ICollection<Event> Events { get; set; } = new List<Event>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
