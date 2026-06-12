@@ -118,12 +118,8 @@ namespace ST10398576_EventEase.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity")] Venue venue, IFormFile imageFile)
+        public async Task<IActionResult> Edit(int id, IFormFile imageFile)
         {
-            if (id != venue.VenueId)
-            {
-                return NotFound();
-            }
             // Load existing entity so we only change the fields the user updated.
             var existing = await _context.Venues.FindAsync(id);
             if (existing == null)
@@ -131,10 +127,12 @@ namespace ST10398576_EventEase.Controllers
                 return NotFound();
             }
 
-            // Update scalar properties from the incoming model
-            existing.VenueName = venue.VenueName;
-            existing.Location = venue.Location;
-            existing.Capacity = venue.Capacity;
+            // Ensure file-related validation doesn't block editing when user chooses not to upload a new image
+            ModelState.Remove("ImageUrl");
+            ModelState.Remove("imageFile");
+
+            // Update only the allowed properties from the incoming form onto the tracked entity
+            var updated = await TryUpdateModelAsync<Venue>(existing, "", v => v.VenueName, v => v.Location, v => v.Capacity, v => v.IsAvailable);
 
             // If a new image was uploaded, upload and replace the ImageUrl; otherwise keep existing.ImageUrl
             if (imageFile != null && imageFile.Length > 0)
@@ -151,11 +149,10 @@ namespace ST10398576_EventEase.Controllers
                 existing.ImageUrl = blobClient.Uri.ToString();
             }
 
-            if (ModelState.IsValid)
+            if (updated && ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(existing);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
@@ -172,7 +169,7 @@ namespace ST10398576_EventEase.Controllers
                 }
             }
 
-            // If we got this far, something failed; return the view with the original existing entity so the image is displayed
+            // If we got this far, something failed; return the view with the existing entity so the image is displayed
             return View(existing);
         }
 
